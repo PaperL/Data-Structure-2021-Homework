@@ -12,7 +12,6 @@ set(src_dir
         # ${PROJECT_SOURCE_DIR}/src/1089.cpp
         # ${PROJECT_SOURCE_DIR}/src/1095.cpp
         # ${PROJECT_SOURCE_DIR}/src/main.cpp
-        # ${PROJECT_SOURCE_DIR}/src/test.cpp
         # 等效于将本内容逐个列于 add_executable 中
-)
-add_executable(code ${src_dir} src/1088.cpp)
+        )
+add_executable(code ${src_dir} src/1094.cpp)
