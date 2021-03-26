@@ -5,4 +5,4 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 include_directories(
         ${PROJECT_SOURCE_DIR}/src/
 )
-add_executable(code ${src_dir} src/1091.cpp)
+add_executable(code ${src_dir} src/1098.cpp)
