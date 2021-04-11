@@ -1,3 +1,7 @@
+//
+// Created by Frank's Laptop on 2021/4/9.
+//
+
 #pragma region PaperL_Header
 #ifndef PTL_PTF_H
 #define PTL_PTF_H
@@ -6,8 +10,8 @@
 
 namespace PTF {
 // Here is PaperL's Template Function
-// Version: 0.50
-// Update Time: 2021.4.11
+// Version: 0.46
+// Update Time: 2021.4.9
 
     template<typename T1, typename T2>
     struct sameType {
@@ -22,29 +26,6 @@ namespace PTF {
             return true;
         }
     };
-
-    template<typename T>
-    inline void swapT(T &_x, T &_y) {
-        T _temp(_x);
-        _x = _y;
-        _y = _temp;
-    }
-
-    template<typename T>
-    inline T maxN(const T &_x, const T &_y) { return (_x > _y) ? _x : _y; }
-
-    template<typename T, typename... argL>
-    inline T maxN(const T &_x, const T &_y, const argL &... _argList) {
-        return ((_x > _y) ? maxN(_x, _argList...) : maxN(_y, _argList...));
-    }
-
-    template<typename T>
-    inline T minN(const T &_x, const T &_y) { return (_x < _y) ? _x : _y; }
-
-    template<typename T, typename... argL>
-    inline T minN(const T &_x, const T &_y, const argL &... _argList) {
-        return ((_x < _y) ? minN(_x, _argList...) : minN(_y, _argList...));
-    }
 
     template<typename T>
     inline T qRead() {
@@ -106,7 +87,33 @@ namespace PTF {
         if (sizeof...(_argList) != 0)
             qWrite(_s, _argList...);
     }
+
+    template<typename T>
+    inline T maxN(const T &_x, const T &_y) { return (_x > _y) ? _x : _y; }
+
+    template<typename T, typename... argL>
+    inline T maxN(const T &_x, const T &_y, const argL &... _argList) {
+        return ((_x > _y) ? maxN(_x, _argList...) : maxN(_y, _argList...));
+    }
+
+    template<typename T>
+    inline T minN(const T &_x, const T &_y) { return (_x < _y) ? _x : _y; }
+
+    template<typename T, typename... argL>
+    inline T minN(const T &_x, const T &_y, const argL &... _argList) {
+        return ((_x < _y) ? minN(_x, _argList...) : minN(_y, _argList...));
+    }
 }
 
 #endif //PTL_PTF_H
 #pragma endregion
+
+using namespace PTF;
+
+
+
+int main() {
+    // 线段树维护区间最省距离二类边
+    // 正向和反向分开处理
+    return 0;
+}

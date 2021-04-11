@@ -4,10 +4,16 @@
 
 #include <cstdio>
 
+#pragma region PaperL_Header
+#ifndef PTL_PTF_H
+#define PTL_PTF_H
+
+#include <cstdio>
+
 namespace PTF {
 // Here is PaperL's Template Function
-// Version: 0.44
-// Update Time: 2021.4.2
+// Version: 0.46
+// Update Time: 2021.4.9
 
     template<typename T1, typename T2>
     struct sameType {
@@ -100,6 +106,9 @@ namespace PTF {
         return ((_x < _y) ? minN(_x, _argList...) : minN(_y, _argList...));
     }
 }
+
+#endif //PTL_PTF_H
+#pragma endregion
 using namespace PTF;
 
 using namespace std;
