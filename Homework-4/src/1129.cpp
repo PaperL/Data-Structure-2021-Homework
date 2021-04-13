@@ -7,23 +7,17 @@
 #define PTL_PTF_H
 
 #include <cstdio>
+#include <cstdlib>
 
 namespace PTF {
 #pragma region PTF_DESCRIPTION
 /*
  * "PaperL's Template Function"
  *
- * Version: 1.0
- * Last Update Time: 2021.4.12
+ * Version: 1.01
+ * Last Update Time: 2021.4.13
  * Last Update Content:
- *      修改带分隔符的 qWrite 函数分隔符传参方式(参数->形参)
- *      扩展 qWrite 函数功能(支持行末符, 分隔字符串)
- *      采用简写函数模板(c++20)重写部分函数
- *      采用 pragma region 整理代码
- *      用 fold expression 及制约函数(c++20) 重写部分函数
- *          0.8 版本之前的 IO 函数会传参 n^2 数量级次, 极大影响效率
- *      采用变量模板(c++14)重写 PTF_TYPE
- *      新增 absT, setT 函数
+ *      修正 qRead 解决 EOF 的问题
  * Going to develop:
  *      IO 函数支持浮点, qRead 函数支持字符
  *      增加 PTF_ALGORITHM
@@ -94,10 +88,11 @@ namespace PTF {
 //  注意 qWrite 及相关函数仅支持 字符/整形
 
     inline void qRead(auto &_k) {
-        char _c = getchar();
+        int _c = getchar();
         bool _sign = false;
         _k = 0;
         while (_c < '0' || _c > '9') {
+            if (_c < 0 || _c > 255) exit(-1);
             if (_c == '-') _sign = true;
             _c = getchar();
         }
@@ -154,7 +149,7 @@ namespace PTF {
 
 #include <queue>
 
-#define MAXN 20008
+#define MAXN 200008
 
 using namespace PTF;
 
@@ -180,17 +175,32 @@ struct LLNode {
 struct PQElement {
     int da = 0, id1 = 0, id2 = 0;
 
-    bool operator<(const PQElement &other) const {
-        return (da > other.da || (da == other.da && id1 > other.id1));
-    }
+    bool operator<(const PQElement &other) const { return (da > other.da || (da == other.da && id1 > other.id1)); }
 };
 
 std::priority_queue<PQElement> pq;
 
 #pragma endregion
 
+inline void del(const int &id1, const int &id2) {
+    int pp = ll[id1].pre, pn = ll[id2].nxt;
+    ll[id1].ava = false, ll[id2].ava = false;
+    if (pp != 0 && pn != 0) {
+        ll[pp].nxt = pn, ll[pn].pre = pp;
+        if (ll[pp].ava && ll[pn].ava && ll[pp].g != ll[pn].g)
+            pq.push((PQElement) {absT(ll[pp].a - ll[pn].a), pp, pn});
+    } else {
+        if (pp == 0) ll[pn].pre = 0;
+        if (pn == 0) ll[pp].nxt = 0;
+    }
+}
+
 int main() {
     qRead(n);
+    if (n == 0) {
+        printf("0\n");
+        return 0;
+    }
     char c = getchar();
     while (c != 'B' && c != 'G') c = getchar();
     for (int i = 1; i <= n; ++i) {
@@ -205,24 +215,14 @@ int main() {
         if (ll[i].g != ll[i + 1].g)
             pq.push((PQElement) {absT(ll[i].a - ll[i + 1].a), i, i + 1});
     }
+    PQElement now;
     while (!pq.empty()) {
-        const auto now = pq.top();
+        now = pq.top();
+        const int &id1 = now.id1, &id2 = now.id2;
         pq.pop();
-        if (!(ll[now.id1].ava && ll[now.id2].ava))continue;
-        ans[0][++ansP] = now.id1, ans[1][ansP] = now.id2;
-        ll[now.id1].ava = ll[now.id2].ava = false;
-
-        if (ll[now.id1].pre != 0 && ll[now.id1].nxt != 0) {
-            ll[ll[now.id1].pre].nxt = ll[now.id1].nxt;
-            ll[ll[now.id1].nxt].pre = ll[now.id1].pre;
-            if (ll[ll[now.id1].pre].ava && ll[ll[now.id1].nxt].ava
-                && ll[ll[now.id1].pre].g != ll[ll[now.id1].nxt].g)
-                pq.push((PQElement) {absT(ll[ll[now.id1].pre].a - ll[ll[now.id1].nxt].a),
-                                     ll[now.id1].pre,
-                                     ll[now.id1].nxt});
-        } else {
-            if (ll[now.id1].pre == 0) ll[ll[now.id1].nxt].pre = 0;
-            if (ll[now.id1].nxt == 0) ll[ll[now.id1].pre].nxt = 0;
+        if (ll[id1].ava && ll[id2].ava) {
+            ans[0][++ansP] = id1, ans[1][ansP] = id2;
+            del(id1, id2);
         }
     }
 
