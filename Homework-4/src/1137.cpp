@@ -1,5 +1,5 @@
 //
-// Created by Frank's Laptop on 2021/4/12.
+// Created by Frank's Laptop on 2021/4/26.
 //
 
 #pragma region PaperL_Header
@@ -11,6 +11,9 @@
 #include <stdexcept>
 #include <type_traits>
 #include <iostream>
+
+#include <exception>
+#include <cstring> // memcpy
 
 namespace PTF {
 #pragma region PTF_DESCRIPTION
@@ -201,41 +204,129 @@ namespace PTF {
 #endif //PTL_PTF_H
 #pragma endregion PaperL_Header
 
-#pragma region BASIC
+#define MAXN 100005
+#define MAXM 100005
+#define INF 1000000007
+
+#pragma region SEGMENT_TREE
+
+class SegmentTree {
+public:
+    int data[MAXN << 2], flag[MAXN << 2], minP[MAXN << 2];
+
+    void build(int l, int r, int p) {
+        flag[p] = 0;
+        if (l == r) {
+            data[p] = 0;
+            minP[p] = l;
+        }
+        else {
+            int mid = (l + r) >> 1;
+            build(l, mid, p << 1);
+            build(mid + 1, r, p << 1 | 1);
+            pushUp(p);
+        }
+    }
+
+    void pushUp(int p) {
+        if (data[p << 1] >= data[p << 1 | 1]) {
+            data[p] = data[p << 1];
+            minP[p] = minP[p << 1];
+        }
+        else {
+            data[p] = data[p << 1 | 1];
+            minP[p] = minP[p << 1 | 1];
+        }
+    }
+
+    void pushDown(int l, int r, int p) {
+        if (flag[p] == 0 || l == r)return;
+        data[p << 1] += flag[p], flag[p << 1] += flag[p];
+        data[p << 1 | 1] += flag[p], flag[p << 1 | 1] += flag[p];
+        flag[p] = 0;
+    }
+
+    void update(int l, int r, int p, int tl, int tr, int k) {
+        pushDown(l, r, p);
+        if (l == tl && tr == r) {
+            data[p] += k;
+            flag[p] += k;
+        }
+        else {
+            int mid = (l + r) >> 1;
+            if (tr <= mid) update(l, mid, p << 1, tl, tr, k);
+            else if (tl > mid) update(mid + 1, r, p << 1 | 1, tl, tr, k);
+            else {
+                update(l, mid, p << 1, tl, mid, k);
+                update(mid + 1, r, p << 1 | 1, mid + 1, tr, k);
+            }
+            pushUp(p);
+        }
+    }
+
+    struct minPair {
+        int p = 0, num = 0;
+    };
+
+    minPair query(int l, int r, int p, int tl, int tr) {
+        pushDown(l, r, p);
+        minPair tp;
+        if (l == tl && tr == r) {
+            tp.num = data[p];
+            tp.p = minP[p];
+            return tp;
+        }
+        int mid = (l + r) >> 1;
+        if (tr <= mid) tp = query(l, mid, p << 1, tl, tr);
+        else if (tl > mid) tp = query(mid + 1, r, p << 1 | 1, tl, tr);
+        else {
+            minPair tp1, tp2;
+            tp1 = query(l, mid, p << 1, tl, mid);
+            tp2 = query(mid + 1, r, p << 1 | 1, mid + 1, tr);
+            tp = (tp1.num >= tp2.num) ? tp1 : tp2;
+        }
+        pushUp(p);
+        return tp;
+    }
+
+} st;
+
+#pragma endregion SEGMENT_TREE
+
+
+int n, m;
+int h[MAXN], next[MAXM], map[MAXN];
+struct Passage {
+    int hh, mm, ss, a;
+} psg[MAXM];
 
 using namespace PTF;
 
-#define MAXK 30008
-
-int K, M;
-int p2, p4, p;
-long long int num[MAXK];
-char ans[1000000];
-int ansp = 0;
-
-#pragma endregion
-
-inline void solve(long long int &k) {
-    char c[10];
-    int cp = 0;
-    while (k) c[cp++] = k % 10, k /= 10;
-    while (cp--) {
-        while (ansp && M && c[cp] > ans[ansp]) --ansp, --M;
-        ans[++ansp] = c[cp];
-    }
-}
-
 int main() {
-    qRead(K, M);
-    p = p2 = p4 = num[1] = 1;
-    while (p < K) {
-        if ((num[p2] << 1 | 1) < ((num[p4] << 2) + 5))
-            num[++p] = (num[p2++]) << 1 | 1;
-        else num[++p] = ((num[p4++]) << 2) + 5;
+    qRead(n, m);
+    for (int i = 1; i <= n; ++i) qRead(h[i]);
+    for (int i = 1; i <= m; ++i) qRead(psg[i].hh, psg[i].mm, psg[i].ss, psg[i].a);
+    for (int i = 1; i <= n; ++i) map[i] = m + 1;
+
+    st.build(1, m, 1);
+
+    int ans = -INF, ansL, ansR;
+    for (int i = m; i >= 1; --i) {
+        next[i] = map[psg[i].a];
+        map[psg[i].a] = i;
+        int th = h[psg[i].a];
+        for (int j = i; j <= m; j = next[j]) {
+            st.update(1, m, 1, j, next[j] - 1, th);
+            th /= 2;
+            if (!th)break;
+        }
+        SegmentTree::minPair tp = st.query(1, m, 1, i, m);
+        if (tp.num >= ans) {
+            ans = tp.num;
+            ansL = i, ansR = tp.p;
+        }
     }
-    for (int i = 1; i <= K; ++i) qWrite(num[i]);
-    putchar(10);
-    for (int i = 1; i <= K; ++i) solve(num[i]);
-    for (int i = 1; i <= ansp; ++i) putchar(ans[i] + '0');
+    qWriteSL(' ', '\n', psg[ansL].hh, psg[ansL].mm, psg[ansL].ss);
+    qWriteSL(' ', '\n', psg[ansR].hh, psg[ansR].mm, psg[ansR].ss);
     return 0;
 }
